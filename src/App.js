@@ -48,6 +48,7 @@ ClearButton.propTypes = {
 class App extends Component {
   constructor(props) {
     super(props);
+    this.toDoInput = React.createRef();
     this.state = {
       todos: [
         { id: 0, title: "Send mail to mom", complete: true },
@@ -55,9 +56,26 @@ class App extends Component {
         { id: 2, title: "Eat pray love", complete: false },
         { id: 3, title: "🌞💅🌚🍵", complete: false }
       ],
-      lastId: 0
+      lastId: 3
     };
   }
+
+  addToDo = event => {
+    event.preventDefault();
+    const toDoInput = this.toDoInput.current;
+    if (toDoInput.value) {
+      const id = this.state.lastId + 1; // update id
+      const newTodos = [
+        ...this.state.todos,
+        { id, title: toDoInput.value, complete: false }
+      ];
+      this.setState({
+        todos: newTodos,
+        lastId: id
+      });
+      toDoInput.value = "";
+    }
+  };
 
   removeCompleted = () => {
     let todos = this.state.todos.filter(todo => !todo.complete);
@@ -88,7 +106,12 @@ class App extends Component {
     return (
       <div className="todo-list">
         <h1>So Much To Do</h1>
-        <h2>{this.state.name}</h2>
+        <div className="add-todo">
+          <form name="addTodo" onSubmit={this.addToDo}>
+            <input type="text" ref={this.toDoInput} />
+            <span>(press enter to add)</span>
+          </form>
+        </div>
         <ul className="todo-list">
           {this.state.todos.map(todo => (
             <ToDo
@@ -101,7 +124,9 @@ class App extends Component {
         </ul>
         <div className="todo-admin">
           <ToDoCount number={this.state.todos.length} />
-          <ClearButton removeCompleted={this.removeCompleted} />
+          {this.hasCompleted() && (
+            <ClearButton removeCompleted={this.removeCompleted} />
+          )}
         </div>
       </div>
     );
